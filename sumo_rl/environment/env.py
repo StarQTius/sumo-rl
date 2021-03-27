@@ -29,10 +29,11 @@ class SumoEnvironment(MultiAgentEnv):
     :param min_green: (int) Minimum green time in a phase
     :param max_green: (int) Max green time in a phase
     :single_agent: (bool) If true, it behaves like a regular gym.Env. Else, it behaves like a MultiagentEnv (https://github.com/ray-project/ray/blob/master/python/ray/rllib/env/multi_agent_env.py)
+    :param cli_args: (str list) Additional arguments to be given to sumo or sumo-gui
     """
 
     def __init__(self, net_file, route_file, out_csv_name=None, use_gui=False, num_seconds=20000, max_depart_delay=100000,
-                 time_to_teleport=-1, delta_time=5, yellow_time=2, min_green=5, max_green=50, single_agent=False):
+                 time_to_teleport=-1, delta_time=5, yellow_time=2, min_green=5, max_green=50, single_agent=False, cli_args=[]):
 
         self._net = net_file
         self._route = route_file
@@ -41,6 +42,7 @@ class SumoEnvironment(MultiAgentEnv):
             self._sumo_binary = sumolib.checkBinary('sumo-gui')
         else:
             self._sumo_binary = sumolib.checkBinary('sumo')
+        self._cli_args = cli_args
 
         self.sim_max_time = num_seconds
         self.delta_time = delta_time  # seconds on sumo at each step
@@ -80,7 +82,7 @@ class SumoEnvironment(MultiAgentEnv):
                      '--max-depart-delay', str(self.max_depart_delay), 
                      '--waiting-time-memory', '10000',
                      '--time-to-teleport', str(self.time_to_teleport),
-                     '--random']
+                     '--random'] + self._cli_args
         if self.use_gui:
             sumo_cmd.append('--start')
 
